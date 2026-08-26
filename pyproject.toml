@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "GtauDenoise"
+version = "0.1.0"
+description = "A package for denoising imaginary time Green's functions using Auxilary spectral functions"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0,<3.0",
+    "scipy>=1.10,<2.0",
+    "matplotlib>=3.7,<4.0",
+    "tqdm>=4.60,<5.0",
+    "numpy>=1.24,<3.0",
+    "triqs>=3.0,<4.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
