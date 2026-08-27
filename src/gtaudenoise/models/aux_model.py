@@ -150,7 +150,7 @@ class SpectralAuxHead(nn.Module):
         feat = torch.cat([x_t.float(), gtau_pred.float(), low_feat, self.t_embed(self.normalized_t(t_idx)).float(), gtau_end[:, None].float(), (-1.0 - gtau_end)[:, None].float()], dim=-1)
         return F.softplus(self.net(feat))
 
-class GiwProjectedDenoiser(nn.Module):
+class AuxModel(nn.Module):
     def __init__(self, ntau, nt, kernel_low, sigmas, giw_scale, n_ws=1000, width=96, modes=16, depth=6, emb_dim=32, cond_dim=24):
         super().__init__()
         self.ntau = ntau
@@ -182,6 +182,3 @@ class GiwProjectedDenoiser(nn.Module):
     def forward(self, x_t, t_idx, gtau_end):
         return self.forward_with_aux(x_t, t_idx, gtau_end)[0]
 
-class FNOHankelNet(GiwProjectedDenoiser):
-    def __init__(self, ntau, nt, kernel_low, sigmas, giw_scale, temb=32, cond_hidden=24, modes=16, num_fourier_layers=6, n_ws=1000, width=96):
-        super().__init__(ntau=ntau, nt=nt, kernel_low=kernel_low, sigmas=sigmas, giw_scale=giw_scale, n_ws=n_ws, width=width, modes=modes, depth=num_fourier_layers, emb_dim=temb, cond_dim=cond_hidden)

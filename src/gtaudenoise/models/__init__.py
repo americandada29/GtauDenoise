@@ -1,1 +1,1 @@
-from .aux_model import GiwProjectedDenoiser
+from .aux_model import AuxModel
