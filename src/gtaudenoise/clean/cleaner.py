@@ -1,6 +1,6 @@
-from models import *
-from utils import *
-from hankel_utils import hankel_projection, HankelCaches
+from ..models.aux_model import *
+from ..utilities.utils import *
+from ..utilities.hankel_utils import hankel_projection, HankelCaches
 from triqs.gf import *
 import numpy as np
 import torch
@@ -77,7 +77,7 @@ def make_gw_from_Aw_integrate_with_iws(iws, beta, ws, Aw):
     return Giw
 
 
-class HankelDenoise():
+class AuxSpecDenoise():
     def __init__(self, device, beta, nt=100, ntau=2**10+1, optim="lbfgs"):
         nt = 200
         ws_max = 10
