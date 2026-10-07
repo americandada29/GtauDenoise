@@ -12,7 +12,7 @@ torch.backends.cudnn.allow_tf32 = True
 nt = 200
 K_LOW = 16
 K_MID = 48
-epochs = 600
+epochs = 450
 batch_size = 1024
 lr = 3e-4
 weight_decay = 1e-4
@@ -103,7 +103,8 @@ for epoch in range(epochs):
     sched.step()
     avg = running / nbatches
     metrics.append({"epoch": epoch + 1, "loss": avg[0].item(), "low": avg[1].item(), "head": avg[2].item(), "mid": avg[3].item(), "tau": avg[4].item(), "curv": avg[5].item(), "aw": avg[6].item(), "end": avg[7].item(), "lr": opt.param_groups[0]["lr"]})
-    torch.save(model.state_dict(), "saved_models/epsnet.pth")
+    if epoch%25 == 0:
+        torch.save(model.state_dict(), f"saved_models/beta{int(beta)}_model-{epoch}.pth")
     torch.save({"metrics": metrics, "K_LOW": K_LOW, "K_MID": K_MID, "nt": nt}, "saved_models/training_metrics.pt")
     print(f"epoch {epoch + 1} loss {avg[0].item():.6e} low {avg[1].item():.6e} head {avg[2].item():.6e} mid {avg[3].item():.6e} tau {avg[4].item():.6e} curv {avg[5].item():.6e} aw {avg[6].item():.6e} end {avg[7].item():.6e} lr {opt.param_groups[0]['lr']:.6e}")
-torch.save(model.state_dict(), "saved_models/epsnet.pth")
+torch.save(model.state_dict(), f"saved_models/beta{int(beta)}_model.pth")

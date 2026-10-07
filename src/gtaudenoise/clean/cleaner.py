@@ -8,6 +8,13 @@ import matplotlib.pyplot as plt
 device = "cuda" if torch.cuda.is_available() else "cpu"
 set_utils_device(device)
 
+def calc_conv(deltai, deltaip1):
+    # return np.sqrt(np.sum(np.abs(deltai.data[:,0,0]-deltaip1.data[:,0,0])**2)/np.sum(np.abs(deltaip1.data[:,0,0])**2))
+    meas_start = deltai.data.shape[0]//2
+    meas_len = 100
+    # weights = np.flip(np.arange(0, meas_len))
+    return np.sqrt(np.sum(np.abs(deltai.data[meas_start:meas_start+meas_len,0,0]-deltaip1.data[meas_start:meas_start+meas_len,0,0])**2))
+
 def make_low_kernel(n_tau, k_low):
     eye = torch.eye(n_tau, device=device, dtype=torch.float32)
     return make_gw_from_gtau_integrate(eye)[:, :k_low].T.contiguous().to(torch.complex64)
@@ -78,7 +85,8 @@ def make_gw_from_Aw_integrate_with_iws(iws, beta, ws, Aw):
 
 
 class AuxSpecDenoise():
-    def __init__(self, device, beta, nt=100, ntau=2**10+1, optim="lbfgs"):
+    def __init__(self, model_path, data_path, device, beta, nt=100, ntau=2**10+1, optim="lbfgs"):
+        #### TODO: Add model parameters as arguments, make sure it works #####
         nt = 200
         ws_max = 10
         N_ws = 1000
@@ -89,13 +97,13 @@ class AuxSpecDenoise():
         set_ws(N_ws, ws_max, meshform="linear")
         taus = get_taus().to(device)
         iws = get_wn().to(device)
-        data = torch.load("../../DDPM_14_CHAT/Data/train_test_data.pt", map_location=torch.device(device))
+        data = torch.load(data_path, map_location=torch.device(device))
         giws_train = data["giws_train"].to(device=device, dtype=torch.complex64)
         self.gtaus_train = data["gtaus_train"].to(device=device, dtype=torch.float32)
         kernel_low = make_low_kernel(ntau, K_LOW)
         giw_scale_low = giws_train[:, :K_LOW].abs().std(dim=0).float().clamp_min(1e-4)
-        self.model = GiwProjectedDenoiser(ntau=ntau, nt=nt, kernel_low=kernel_low, sigmas=sigmas, giw_scale=giw_scale_low, n_ws=N_ws, width=96, modes=16, depth=6, emb_dim=32, cond_dim=24).to(device)
-        self.model.load_state_dict(torch.load("../../DDPM_14_CHAT/saved_models/epsnet.pth", map_location=torch.device(device)))
+        self.model = AuxModel(ntau=ntau, nt=nt, kernel_low=kernel_low, sigmas=sigmas, giw_scale=giw_scale_low, n_ws=N_ws, width=96, modes=16, depth=6, emb_dim=32, cond_dim=24).to(device)
+        self.model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
         self.model.eval()
         self.ntau = ntau
         self.nt = nt
